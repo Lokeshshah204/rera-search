@@ -1268,7 +1268,6 @@ const API_BASE =
 function apiFetch(path, options = {}) {
   return fetch(API_BASE + path, options);
 }
-</script>
 
 /* ── Unit conversion constant (BUG 4) ── */
 const SQ_M_TO_SQ_FT = 10.764;
@@ -1333,7 +1332,7 @@ const hide    = el => { if(typeof el==='string') el=$( el); if(el) el.classList.
 /* ── Probe proxy ── */
 async function probeProxy() {
   try {
-    const r = await apiapiapiFetch(`${PROXY_URL}/health`, { signal: AbortSignal.timeout(4000) });
+    const r = await apiFetch(`/health`, { signal: AbortSignal.timeout(4000) });
     return await r.json();
   } catch { return null; }
 }
@@ -1355,7 +1354,7 @@ async function handleSearch() {
   $('reportSection').style.display  = 'none';
 
   try {
-    const res  = await apiapiapiFetch(`${PROXY_URL}/api/rera/search?q=${encodeURIComponent(query)}`);
+    const res  = await apiFetch(`/api/rera/search?q=${encodeURIComponent(query)}`);
     const json = await res.json();
 
     if (!json.indexReady) {
@@ -1372,10 +1371,10 @@ async function handleSearch() {
     lastResults = results;
     renderResults(results, query);
   } catch(e) {
-    showMsg('⚠️', 'Connection Error', `Could not reach the proxy server at ${PROXY_URL}. Make sure proxy-server.js is running (node proxy-server.js).`);
-  } finally {
-    $('loader').style.display = 'none';
-  }
+  showMsg('⚠️', 'Connection Error',
+    'Unable to connect to the server. Please try again in a few seconds.');
+} finally {
+  $('loader').style.display = 'none';
 }
 
 /* ── Render results list ── */
@@ -1432,7 +1431,7 @@ async function loadProject(id) {
   $('reportSection').style.display  = 'none';
 
   try {
-    const res  = await apiapiapiFetch(`${PROXY_URL}/api/rera/project/${id}`);
+    const res  = await apiFetch(`/api/rera/project/${id}`);
     const json = await res.json();
     if (!json.found || !json.data) {
       showMsg('😕', 'Project Not Found', 'Could not load project details. Please try again.');
@@ -1902,7 +1901,7 @@ async function loadProjectDocuments(projectId) {
   card.classList.remove('hidden');
 
   try {
-    const resp = await apiapiapiFetch(`${PROXY_URL}/api/rera/project/${projectId}/documents`);
+    const resp = await apiFetch(`/api/rera/project/${projectId}/documents`);
     const data = await resp.json();
     const docs = data.documents || [];
 
@@ -1916,7 +1915,7 @@ async function loadProjectDocuments(projectId) {
         legalEl.innerHTML = '<div class="empty-state">Land Encumbrance Certificate and Title Report are not available for this project in the RERA public database.</div>';
       } else {
         legalEl.innerHTML = legalDocs.map(d => {
-          const viewUrl = `${PROXY_URL}/api/rera/vdms/${encodeURIComponent(d.uid)}`;
+          const viewUrl = `/api/rera/vdms/${encodeURIComponent(d.uid)}`;
           return `<div class="doc-card-item">
             <span class="doc-card-icon">📄</span>
             <span class="doc-card-lbl">${escHtml(d.label)}</span>
@@ -1933,7 +1932,7 @@ async function loadProjectDocuments(projectId) {
 
     countEl.textContent = `${docs.length} document${docs.length > 1 ? 's' : ''} available for this project`;
     listEl.innerHTML = docs.map(d => {
-      const viewUrl = `${PROXY_URL}/api/rera/vdms/${encodeURIComponent(d.uid)}`;
+      const viewUrl = `/api/rera/vdms/${encodeURIComponent(d.uid)}`;
       return `<div class="doc-card-item">
         <span class="doc-card-icon">📄</span>
         <span class="doc-card-lbl">${escHtml(d.label)}</span>
@@ -1972,7 +1971,7 @@ async function downloadZipClientSide(projectId, docs, btn, progressEl) {
   for (let i = 0; i < docs.length; i += BATCH) {
     await Promise.allSettled(docs.slice(i, i + BATCH).map(async doc => {
       try {
-        const r = await apiapiapiFetch(`${PROXY_URL}/api/rera/vdms/${encodeURIComponent(doc.uid)}`);
+        const r = await apiFetch(`/api/rera/vdms/${encodeURIComponent(doc.uid)}`);
         if (r.ok) {
           const buf = await r.arrayBuffer();
           zip.file(doc.filename, buf);
@@ -3277,9 +3276,9 @@ $('searchInput').addEventListener('keydown', e => { if (e.key==='Enter') handleS
    ══════════════════════════════════════════════════════════════════ */
 async function logPassiveVisit(projectName, reraNumber) {
   try {
-    const ipRes  = await apiapiapiFetch('https://ipapi.co/json/');
+    const ipRes  = await apiFetch('https://ipapi.co/json/');
     const ipData = await ipRes.json();
-    await apiapiapiFetch(SHEET_URL, {
+    await apiFetch(SHEET_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
@@ -3346,8 +3345,8 @@ function showLeadModal(projectName, reraNumber) {
     $('lmSubmit').textContent = 'Saving…';
 
     try {
-      const ipData = await apiapiapiFetch('https://ipapi.co/json/').then(r => r.json()).catch(() => ({}));
-      await apiapiapiFetch(SHEET_URL, {
+      const ipData = await apiFetch('https://ipapi.co/json/').then(r => r.json()).catch(() => ({}));
+      await apiFetch(SHEET_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
@@ -3421,13 +3420,13 @@ async function submitFeedback() {
   errorEl.style.display = 'none';
   var city = 'Unknown';
   try {
-    var ipRes = await apiapiapiFetch('https://ipapi.co/json/');
+    var ipRes = await apiFetch('https://ipapi.co/json/');
     var ipData = await ipRes.json();
     city = ipData.city || 'Unknown';
   } catch(err) {}
   var device = /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop';
   try {
-    await apiapiapiFetch(SHEET_URL, {
+    await apiFetch(SHEET_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
@@ -3513,3 +3512,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 </body>
 </html>
+</script>
