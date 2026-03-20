@@ -1,0 +1,17 @@
+node_modules/
+.env
+
+# system / temp
+.cache/
+cache/
+logs/
+qa_tmp/
+*.log
+
+# editor / git
+.vscode/
+.git/
+
+# OS files
+.DS_Store
+Thumbs.db
