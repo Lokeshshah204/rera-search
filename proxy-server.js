@@ -135,6 +135,10 @@ const INDEX_MAX_ID = 35000;
 const INDEX_TTL_MS = 1 * 60 * 60 * 1000;   // 1 hour — keeps search index in sync with project cache
 
 async function buildIndex() {
+  console.log('[Index] Bulk index disabled — using globalSearch only.');
+  indexBuiltAt = Date.now();
+  return;
+
   if (indexBuilding) return;
 
   /* ── Serve from disk cache if fresh (avoids re-fetching on every restart) ── */
@@ -642,10 +646,13 @@ app.get('/api/rera/search', async (req, res) => {
   ensureIndex();
 
   if (searchIndex.length === 0) {
+    const globalOnly = await globalSearch(query).catch(() => []);
+    const enriched = await enrichWithPromoterNames(globalOnly).catch(() => globalOnly);
     return res.json({
-      indexReady: false,
-      message   : 'Search index is still building. Please wait ~30 seconds and try again.',
-      results   : [],
+      indexReady: true,
+      query,
+      count  : enriched.length,
+      results: enriched,
     });
   }
 
