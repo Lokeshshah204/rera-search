@@ -71,8 +71,8 @@ function cacheWrite(key, data) {
 
 /* ── Rate-limit helper ── */
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-const INDEX_BATCH_SIZE = 1000;   // IDs per maplocation request
-const RATE_DELAY_MS    = 150;    // ms pause between index batches
+const INDEX_BATCH_SIZE = 100;    // IDs per maplocation request
+const RATE_DELAY_MS    = 500;    // ms pause between index batches
 
 /* ── CORS ── */
 app.use(cors({
@@ -154,8 +154,13 @@ async function buildIndex() {
 
     for (let start = 0; start < ids.length; start += INDEX_BATCH_SIZE) {
       const batch = ids.slice(start, start + INDEX_BATCH_SIZE);
-      const res   = await axiosPost(MAP_API, batch, 30000).catch(() => null);
-      if (res?.data) allProjects.push(...res.data);
+      const res   = await axiosPost(MAP_API, batch, 60000).catch(() => null);
+      if (res?.data) {
+        console.log(`[Index] Batch response sample:`, JSON.stringify(res.data[0]).slice(0,100));
+        allProjects.push(...res.data);
+      } else {
+        console.log(`[Index] Batch returned null/empty`);
+      }
 
       const fetched = Math.min(start + INDEX_BATCH_SIZE, ids.length);
       if (fetched % 5000 === 0 || fetched === ids.length)
