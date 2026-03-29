@@ -71,8 +71,8 @@ function cacheWrite(key, data) {
 
 /* ── Rate-limit helper ── */
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-const INDEX_BATCH_SIZE = 100;    // IDs per maplocation request
-const RATE_DELAY_MS    = 500;    // ms pause between index batches
+const INDEX_BATCH_SIZE = 1000;   // IDs per maplocation request
+const RATE_DELAY_MS    = 150;    // ms pause between index batches
 
 /* ── CORS ── */
 app.use(cors({
@@ -135,10 +135,6 @@ const INDEX_MAX_ID = 35000;
 const INDEX_TTL_MS = 1 * 60 * 60 * 1000;   // 1 hour — keeps search index in sync with project cache
 
 async function buildIndex() {
-  console.log('[Index] Bulk index disabled — using globalSearch only.');
-  indexBuiltAt = Date.now();
-  return;
-
   if (indexBuilding) return;
 
   /* ── Serve from disk cache if fresh (avoids re-fetching on every restart) ── */
