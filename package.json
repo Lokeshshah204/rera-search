@@ -4,7 +4,17 @@
   "description": "Proxy server for Gujarat RERA project search — gujreraexperts.com",
   "main": "proxy-server.js",
   "scripts": {
-    "start": "node proxy-server.js"
+    "start": "node proxy-server.js",
+    "dev": "npx nodemon proxy-server.js",
+    "test": "jest --testTimeout=30000 --forceExit",
+    "test:unit": "jest tests/unit.test.js --forceExit",
+    "test:scenarios": "jest tests/scenarios.test.js --forceExit",
+    "test:integration": "jest tests/integration.test.js --forceExit --testTimeout=30000"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/tests/**/*.test.js"],
+    "verbose": true
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
@@ -12,7 +22,7 @@
     "axios": "^1.6.0",
     "cheerio": "^1.0.0-rc.12",
     "cors": "^2.8.5",
-    "dotenv": "^17.3.1",
+    "dotenv": "^16.4.5",
     "express": "^4.18.2",
     "node-cron": "^4.2.1",
     "nodemailer": "^8.0.2",
@@ -20,6 +30,10 @@
     "pdf-parse": "^2.4.5"
   },
   "engines": {
-    "node": "18.x"
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
   }
 }
