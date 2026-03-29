@@ -287,6 +287,7 @@ async function globalSearch(query) {
   try {
     const data  = await axiosPost(GLOBAL_SEARCH_API, { query }, 12000);
     const items = data?.data || [];
+    console.log(`[GlobalSearch] query="${query}" raw data keys=${JSON.stringify(Object.keys(data||{}))}, items=${items.length}`);
     // Return only PROJECT entities; each has entityId = numeric project ID
     return items
       .filter(i => i.entityType === 'PROJECT' && i.entityId)
@@ -626,7 +627,7 @@ app.get('/health', (req, res) => {
     service     : 'Gujarat RERA Proxy',
     indexSize   : searchIndex.length,
     indexBuiltAt: indexBuiltAt ? new Date(indexBuiltAt).toISOString() : null,
-    indexReady  : searchIndex.length > 0,
+    indexReady  : indexBuiltAt !== null,
   });
 });
 
@@ -647,6 +648,7 @@ app.get('/api/rera/search', async (req, res) => {
 
   if (searchIndex.length === 0) {
     const globalOnly = await globalSearch(query).catch(() => []);
+    console.log(`[Search] globalSearch returned ${globalOnly.length} results for "${query}"`);
     const enriched = await enrichWithPromoterNames(globalOnly).catch(() => globalOnly);
     return res.json({
       indexReady: true,
